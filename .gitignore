@@ -1,13 +1,10 @@
-*.avi
-*.mpg
-*.npy
-*.align
-.vs/
 *.align
 *.avi
 *.mpg
 *.npy
 .vs/
+.idea/
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

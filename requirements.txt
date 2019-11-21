@@ -1,3 +1,4 @@
+keras
 dlib==19.18.0
 imutils==0.5.3
 numpy==1.17.3
