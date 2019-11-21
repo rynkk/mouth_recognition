@@ -9,22 +9,19 @@ import numpy as np
 
 def get_Lipnet(n_classes=10, summary=False):
     input_layer = Input(name='the_input', shape=(75, 50, 100, 3), dtype='float32')
-    network = ZeroPadding3D(padding=(1, 2, 2), name='zero1')(input_layer)
-    network = Conv3D(32, (3, 5, 5), strides=(1, 2, 2), kernel_initializer='he_normal', name='conv1')(network)
+    network = Conv3D(32, (3, 5, 5), strides=(1, 2, 2), padding="same", kernel_initializer='he_normal', name='conv1')(input_layer)
     network = BatchNormalization(name='batc1')(network)
     network = Activation('relu', name='actv1')(network)
     network = SpatialDropout3D(0.5)(network)
     network = MaxPooling3D(pool_size=(1, 2, 2), strides=(1, 2, 2), name='max1')(network)
 
-    network = ZeroPadding3D(padding=(1, 2, 2), name='zero2')(network)
-    network = Conv3D(64, (3, 5, 5), strides=(1, 1, 1), kernel_initializer='he_normal', name='conv2')(network)
+    network = Conv3D(64, (3, 5, 5), strides=(1, 1, 1), padding="same", kernel_initializer='he_normal', name='conv2')(network)
     network = BatchNormalization(name='batc2')(network)
     network = Activation('relu', name='actv2')(network)
     network = SpatialDropout3D(0.5)(network)
     network = MaxPooling3D(pool_size=(1, 2, 2), strides=(1, 2, 2), name='max2')(network)
 
-    network = ZeroPadding3D(padding=(1, 1, 1), name='zero3')(network)
-    network = Conv3D(96, (3, 3, 3), strides=(1, 1, 1), kernel_initializer='he_normal', name='conv3')(network)
+    network = Conv3D(96, (3, 3, 3), strides=(1, 1, 1), padding="same", kernel_initializer='he_normal', name='conv3')(network)
     network = BatchNormalization(name='batc3')(network)
     network = Activation('relu', name='actv3')(network)
     network = SpatialDropout3D(0.5)(network)
@@ -41,6 +38,7 @@ def get_Lipnet(n_classes=10, summary=False):
 
     model = Model(inputs=input_layer, outputs=outputs)
     if summary:
+        keras.utils.plot_model(model, 'basic.png', show_shapes=True)
         print(model.summary())
 
     model.compile(optimizer=keras.optimizers.adam(lr=1e-4),
