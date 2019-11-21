@@ -79,35 +79,6 @@ while(True):
             when_opened = time.perf_counter()
             activated = True
         
-        """if recording:
-            print("recording")
-            now_rec = time.perf_counter()
-            print("now_active: %s", now_rec)
-            print("now_rec: %s", now_active)
-            if now_rec - now_active > 5: # recording for 5s
-                recording = False
-                activated = False
-        elif activated:
-            if ratio >= ACTIVATION_RATIO:
-                activated = False
-            else:
-            print("activated")
-            now_active = time.perf_counter()
-            print("seconds: %s", seconds)
-            print("now_active: %s", now_active)
-            if now_active-seconds > 1:
-                color = (0,255,0) #green
-                recording = True
-        elif ratio < ACTIVATION_RATIO:
-            print("mouth open")
-            activated = True
-            color = (0,255,255) #yellow
-            seconds = time.perf_counter()
-        else:
-            print("mouth shut")
-            activated = False
-            color = (0,0,255) #red
-        """
         cv2.line(frame, left, right, color)
         cv2.line(frame, top, bottom, color)
 
