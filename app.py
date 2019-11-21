@@ -23,7 +23,11 @@ height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 #(mouth_lower, mouth_upper) = face_utils.FACIAL_LANDMARKS_68_IDXS['mouth']
 (mouth_lower, mouth_upper) = (48,60)
 
-ACTIVATION_RATIO = 2.4
+ACTIVATION_RATIO = 3.0
+RECORDING_TIME = 2.0
+ACTIVATION_TIME = 0.5
+
+
 activated = False
 recording = False
 color = (0,0,255) #red
@@ -52,7 +56,30 @@ while(True):
         diff_w = euclidian_distance(left, right)
 
         ratio = round(diff_w/diff_h, 5)
-        if recording:
+
+        if ratio >= ACTIVATION_RATIO and not recording:  # mouth shut & not recording
+            print("mouth shut\r", end='') 
+            activated = False   
+            color = (0,0,255) #yellow
+        elif recording:
+            print("recording \r", end='') 
+            now_rec = time.perf_counter()               
+            color = (0,255,0) #yellow
+            if now_rec - now_active > 1: # recording for 5s
+                recording = False 
+        elif activated:
+            print("checking  \r", end='')   
+            color = (0,255,255) #yellow
+            now_active = time.perf_counter()
+            if now_active - when_opened > 0.5:
+                recording = True
+                activated = False
+        else:   # Mouth open
+            print("mouth open\r", end='')
+            when_opened = time.perf_counter()
+            activated = True
+        
+        """if recording:
             print("recording")
             now_rec = time.perf_counter()
             print("now_active: %s", now_rec)
@@ -61,6 +88,9 @@ while(True):
                 recording = False
                 activated = False
         elif activated:
+            if ratio >= ACTIVATION_RATIO:
+                activated = False
+            else:
             print("activated")
             now_active = time.perf_counter()
             print("seconds: %s", seconds)
@@ -77,7 +107,7 @@ while(True):
             print("mouth shut")
             activated = False
             color = (0,0,255) #red
-
+        """
         cv2.line(frame, left, right, color)
         cv2.line(frame, top, bottom, color)
 
