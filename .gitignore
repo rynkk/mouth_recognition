@@ -1,3 +1,11 @@
+*.align
+*.avi
+*.mpg
+*.npy
+.vs/
+.idea/
+.dataset/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
