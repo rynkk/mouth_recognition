@@ -1,5 +1,0 @@
-<application>
-  <component name="Git.Application.Settings">
-    <option name="AUTO_COMMIT_ON_CHERRY_PICK" value="false" />
-  </component>
-</application>
