@@ -4,7 +4,15 @@
 *.npy
 .vs/
 .idea/
-.dataset/
+dataset/
+
+# PyCharm
+_linux/
+codestyles/
+inspection/
+keymaps/
+*.xml
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
