@@ -17,6 +17,9 @@ facerec = dlib.face_recognition_model_v1("dlib_face_recognition_resnet_model_v1.
 
 cap = cv2.VideoCapture(0)
 
+fps = cap.get(cv2.CAP_PROP_FPS) # not supported by my webcam
+print(fps)
+
 width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
 height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
@@ -27,7 +30,7 @@ ACTIVATION_RATIO = 3.0
 RECORDING_TIME = 2.0
 ACTIVATION_TIME = 0.5
 
-
+current_frame = 0
 activated = False
 recording = False
 color = (0,0,255) #red
@@ -58,33 +61,36 @@ while(True):
         ratio = round(diff_w/diff_h, 5)
 
         if ratio >= ACTIVATION_RATIO and not recording:  # mouth shut & not recording
-            print("mouth shut\r", end='') 
+            #print("mouth shut\r", end='') 
             activated = False   
-            color = (0,0,255) #yellow
+            color = (0,0,255) #red
         elif recording:
-            print("recording \r", end='') 
-            now_rec = time.perf_counter()               
-            color = (0,255,0) #yellow
-            if now_rec - now_active > 1: # recording for 5s
-                recording = False 
+            #print("recording \r", end='') 
+            now_rec = time.perf_counter()
+            color = (0,255,0) #green
+
+            current_frame += 1
+            #print("\n")
+            print("current_frame %d\r" % current_frame, end='')
+
+            if current_frame == 75:
+                recording = False
+
         elif activated:
-            print("checking  \r", end='')   
+            #print("checking  \r", end='')   
             color = (0,255,255) #yellow
             now_active = time.perf_counter()
             if now_active - when_opened > 0.5:
                 recording = True
+                current_frame = 0
                 activated = False
         else:   # Mouth open
-            print("mouth open\r", end='')
+            #print("mouth open\r", end='')
             when_opened = time.perf_counter()
             activated = True
         
         cv2.line(frame, left, right, color)
         cv2.line(frame, top, bottom, color)
-
-        
-
-        #fps = cap.get(cv2.CAP_PROP_FRAME_COUNT) # not supported by my webcam
 
         cv2.putText(frame, "ratio: %s" % ratio, (0, height-5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color)
 
