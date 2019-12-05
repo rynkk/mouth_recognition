@@ -39,7 +39,7 @@ def get_Lipnet(n_classes=10, summary=False):
 
     model = Model(inputs=input_layer, outputs=outputs)
     if summary:
-        keras.utils.plot_model(model, 'basic.png', show_shapes=True)
+        keras.utils.plot_model(model, 'network.png', show_shapes=True)
         print(model.summary())
 
     model.compile(optimizer=keras.optimizers.adam(lr=1e-4),

@@ -15,7 +15,8 @@ class DataGenerator(Sequence):
     def __init__(self, batch_size=10, dim=(75,50,100), n_channels=3, n_classes=51, shuffle=True):
         self.dim = dim
         self.batch_size = batch_size
-        self.df = self.prepare_labels(lipnet_features)
+        self.df = self.get_dataframe(lipnet_features)
+        print(self.df.head(10))
         self.list_IDs = list(range(len(self.df.videopath)))
         self.n_channels = n_channels
         self.n_classes = n_classes
@@ -55,14 +56,17 @@ class DataGenerator(Sequence):
         for i, ID in enumerate(list_IDs_temp):
             # Store sample
 
-            y[i]  = np.array(self.df.iloc[ID, 1:].values)
-            X[i,] = np.array(self.load_video(self.df.iloc[ID, 0]))
+            y[i]  = np.array(self.df.iloc[ID, 2:].values)
+            X[i,] = np.array(self.load_video(self.df.iloc[ID, 1]))
 
         return X, y
 
 
 
-    def prepare_labels(self, poss_labels, alignpath='./dataset/alignments/', videopath='./dataset/cropped_videos/'):
+    def get_dataframe(self, poss_labels, alignpath='./dataset/alignments/', videopath='./dataset/cropped_videos/'):
+        if 'train.csv' in os.listdir('./dataset/'):
+            return pd.read_csv('./dataset/train.csv', sep='\t')
+
         r = {'videopath': []}
         for po in poss_labels:
             r[po] = []
@@ -88,11 +92,12 @@ class DataGenerator(Sequence):
                     broken_index += 1
         print("There are " + str(broken_index) + " broken files")
         r = pd.DataFrame.from_dict(r)
-        r.to_csv("train.csv", sep='\t')
-        return 
+        r.to_csv("dataset/train.csv", sep='\t')
+        return r
 
 
     def load_video(self, filepath):
+        print(filepath)
         cap = cv2.VideoCapture(filepath)
         frameCount = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
         frameWidth = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
