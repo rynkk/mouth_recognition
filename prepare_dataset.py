@@ -24,10 +24,13 @@ def prepare_videos(filepath='./dataset/cropped_videos/'):
                 ret, buf[fc] = cap.read()
                 fc += 1
 
-            videos.append(buf.shape)
+            videos.append(buf)
             cap.release()
+
     print(np.array(videos).shape)
+    print(np.array(videos)[0])
     print(np.array(videos)[0].shape)
+    print(np.array(videos)[0][0].shape)
 
 
 def prepare_labels(poss_labels, alignpath='./dataset/alignments/', videopath='./dataset/cropped_videos/'):
@@ -58,5 +61,6 @@ if __name__ == '__main__':
               'j', 'k', 'l', 'm', 'n', 'o', 'q', 'r', 's', 't', 'p', 'u', 'v', 'x', 'y', 'z']
     df = pd.DataFrame.from_dict(prepare_labels(labels))
     print(df)
+    prepare_videos()
 
 

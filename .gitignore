@@ -6,6 +6,8 @@
 .idea/
 dataset/
 
+.vscode/
+train.csv
 # PyCharm
 _linux/
 codestyles/

@@ -3,6 +3,7 @@ from keras.layers import Input, ZeroPadding3D, Conv3D, BatchNormalization, Activ
 from keras import Model
 import keras
 import numpy as np
+from data_gen_stanford import DataGenerator
 
 
 # https://github.com/rizkiarm/LipNet/blob/master/lipnet/model2.py
@@ -29,11 +30,11 @@ def get_Lipnet(n_classes=10, summary=False):
 
     network = TimeDistributed(Flatten())(network)
 
-    network = Bidirectional(GRU(256, return_sequences=True, kernel_initializer='Orthogonal', name='gru1'),
+    network = Bidirectional(GRU(128, return_sequences=True, kernel_initializer='Orthogonal', name='gru1'),
                             merge_mode='concat')(network)
-    network = Bidirectional(GRU(256, return_sequences=True, kernel_initializer='Orthogonal', name='gru2'),
+    network = Bidirectional(GRU(128, return_sequences=True, kernel_initializer='Orthogonal', name='gru2'),
                             merge_mode='concat')(network)
-
+    network = Flatten()(network)
     outputs = Dense(n_classes, kernel_initializer='he_normal', name='dense1', activation="softmax")(network)
 
     model = Model(inputs=input_layer, outputs=outputs)
@@ -42,11 +43,17 @@ def get_Lipnet(n_classes=10, summary=False):
         print(model.summary())
 
     model.compile(optimizer=keras.optimizers.adam(lr=1e-4),
-                  loss=keras.losses.sparse_categorical_crossentropy,
+                  loss=keras.losses.categorical_crossentropy,
                   metrics=['accuracy'])
     return model
 
 
 if __name__ == '__main__':
-    model = get_Lipnet(n_classes=20, summary=True)
-    model.fit()
+    model = get_Lipnet(n_classes=51, summary=True)
+    datagen = DataGenerator(batch_size=10)
+    if False:
+        model.fit_generator(generator=datagen, epochs=1, shuffle=True, 
+            use_multiprocessing=True, workers=6)
+    else:
+        model.fit_generator(generator=datagen, epochs=1, shuffle=True)
+        
