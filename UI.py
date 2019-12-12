@@ -18,7 +18,7 @@ class GameBoard(Frame):
         self.size = size
         self.color1 = color1
         self.color2 = color2
-        canvas_width = columns * size
+        canvas_width = columns * sizek
         canvas_height = rows * size
 
         self.gameboxs = [[GameBox(i, j, 50, "white") for j in range(columns)] for i in range(rows)]
@@ -36,15 +36,14 @@ class GameBoard(Frame):
 
         for j in range(columns):
             self.gameboxs[0][j] = GameBox(0,j,20,"green", label=True)
-            image = PhotoImage(file="bmp/test.png")
-            #image = PhotoImage(file="bmp/label_top_"+str(j)+".png")
+            #image = PhotoImage(file="bmp/test.png")
+            image = PhotoImage(file="bmp/label_top_"+str(j)+".png")
             self.gameboxs[0][j].setFigureImage(image)
 
         for i in range(columns):
             self.gameboxs[i][0] = GameBox(i,0,20,"green", label=True)
-            #image = PhotoImage(file="bmp/label_left_"+str(i)+".png")
-            #self.gameboxs[i][0].setFigureImage(image)
-
+            image = PhotoImage(file="bmp/label_left_"+str(i)+".png")
+            self.gameboxs[i][0].setFigureImage(image)
 
 
         Frame.__init__(self, parent)
