@@ -18,7 +18,7 @@ class GameBoard(Frame):
         self.size = size
         self.color1 = color1
         self.color2 = color2
-        canvas_width = columns * sizek
+        canvas_width = columns * size
         canvas_height = rows * size
 
         self.gameboxs = [[GameBox(i, j, 50, "white") for j in range(columns)] for i in range(rows)]
