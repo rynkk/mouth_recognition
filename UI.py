@@ -80,18 +80,20 @@ class GameBoard(Frame):
         randColumn = random.randrange(1, 10)
         g = self.gameboxs[randRow][randColumn]
         g.setRed()
-        g.setFigure("info", "blue")
+        i = random.randrange(0,9)
+        self.drawFigure(randRow, randColumn, i)
         self.refresh(None)
 
-    def drawFigure(self, row, column, figure, color):
+    def drawFigure(self, row, column, image_label):
         g = self.gameboxs[row][column]
-        g.setFigure(figure, color)
+        image = PhotoImage(file="bmp/label_left_" + str(image_label) + ".png")
+        g.setFigureImage(image)
         self.refresh(None)
 
 
     def refresh(self, event):
         '''Redraw the board, possibly in response to window being resized'''
-
+        self.canvas.delete("all")
         if event != None:
             width = event.width - 1
             height = event.height - 1
@@ -111,23 +113,9 @@ class GameBoard(Frame):
                 g.update(self.size)
                 self.canvas.create_rectangle(g.x1, g.y1, g.x2, g.y2, outline="black", fill=g.currentColor,
                                              tags="square")
-                if g.figure is not None:
-                    self.canvas.create_bitmap(g.x1+g.size//2, g.y1+g.size//2, bitmap=g.figure)
-
                 if g.image is not None:
                     self.canvas.create_image((g.x1+g.size//2,g.y1+g.size//2), image=g.image)
                     self.canvas.pack()
-
-
-                # for row in range(self.rows):
-                #     color = self.color1 if color == self.color2 else self.color2
-                #     for col in range(self.columns):
-                #         x1 = (col * self.size)
-                #         y1 = (row * self.size)
-                #         x2 = x1 + self.size
-                #         y2 = y1 + self.size
-                #         self.canvas.create_rectangle(x1, y1, x2, y2, outline="black", fill=color, tags="square"
-                #         color = self.color1 if color == self.color2 else self.color2
 
 
 class GameBox:
@@ -164,10 +152,6 @@ class GameBox:
 
     def setRed(self):
         self.currentColor = "red"
-
-    def setFigure(self, figure, color):
-        self.figure = figure
-        self.figure_color = color
 
     def setFigureImage(self, image):
         self.image = image
