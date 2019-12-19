@@ -1,3 +1,4 @@
+tensorflow
 keras
 dlib==19.18.0
 imutils==0.5.3
