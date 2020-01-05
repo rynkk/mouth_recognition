@@ -6,10 +6,13 @@ import cv2
 import os
 import random
 
-lipnet_features = ['again', 'at', 'bin', 'blue', 'by', 'eight', 'five', 'four', 'green', 'in',
-                   'lay', 'place', 'please', 'nine', 'now', 'one', 'red', 'set', 'seven', 'six', 'soon',
-                   'three', 'two', 'white', 'with', 'zero', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i',
-                   'j', 'k', 'l', 'm', 'n', 'o', 'q', 'r', 's', 't', 'p', 'u', 'v', 'x', 'y', 'z']
+lipnet_features = ['again', 'at', 'bin', 'blue', 'by', 'green', 'in', 'lay', 'place', 'please',
+                   'now', 'red', 'set', 'soon', 'white', 'with',
+                   'zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine',
+                   'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'q',
+                   'r', 's', 't', 'p', 'u', 'v', 'x', 'y', 'z']
+
+lipnet_features_smol = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine']
 
 
 class DataGenerator(Sequence):
@@ -19,6 +22,7 @@ class DataGenerator(Sequence):
         self.batch_size = batch_size
         self.df = self.get_dataframe(lipnet_features)
         test_train_IDs = list(range(len(self.df.videopath)))
+        # remove this shuffle if the validation data is supposed to stay the same over multiple runs
         random.shuffle(test_train_IDs)
         max_train_index = len(test_train_IDs) - int(len(test_train_IDs) * (1 - val_split))
         self.train_IDs = test_train_IDs[0:max_train_index]
@@ -31,35 +35,30 @@ class DataGenerator(Sequence):
 
     def __len__(self):
         # 'Denotes the number of batches per epoch'
-        return int(np.floor(len(self.df.videopath) / self.batch_size))
+        return int(np.floor(len(self.train_IDs) / self.batch_size))
 
     def __getitem__(self, index):
         # 'Generate one batch of data'
         # Generate indexes of the batch
-        indexes = self.indexes[index * self.batch_size:(index + 1) * self.batch_size]
-
-        # Find list of IDs
-        train_IDs_temp = [self.train_IDs[k] for k in indexes]
+        indexes = self.train_IDs[index * self.batch_size:(index + 1) * self.batch_size]
 
         # Generate data
-        X, y = self.__data_generation(train_IDs_temp)
+        X, y = self.__data_generation(indexes)
 
         return X, y
 
     def on_epoch_end(self):
-        self.indexes = np.arange(len(self.train_IDs))
         if self.shuffle:
-            np.random.shuffle(self.indexes)
+            np.random.shuffle(self.train_IDs)
 
-    def __data_generation(self, list_IDs_temp):
+    def __data_generation(self, list_ids_temp):
         # 'Generates data containing batch_size samples' # X : (n_samples, *dim, n_channels)
         # Initialization
-        print(list_IDs_temp)
         X = np.empty((self.batch_size, *self.dim, self.n_channels))
         y = np.empty((self.batch_size, self.n_classes), dtype=int)
 
         # Generate data
-        for i, ID in enumerate(list_IDs_temp):
+        for i, ID in enumerate(list_ids_temp):
             # Store sample
             y[i] = np.array(self.df.iloc[ID, 2:].values)
             X[i] = np.array(self.load_video(self.df.iloc[ID, 1]))
@@ -69,6 +68,8 @@ class DataGenerator(Sequence):
         if 'train.csv' in os.listdir('./dataset/'):
             return pd.read_csv('./dataset/train.csv', sep='\t')
 
+        # ONLY DURING FIRST PREPARATION OF THE DATA SET
+        # OBSOLETE IF train.csv WAS ALREADY PERPARED
         r = {'videopath': []}
         for po in poss_labels:
             r[po] = []
