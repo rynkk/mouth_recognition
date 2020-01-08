@@ -93,10 +93,17 @@ def get_Lipnet_no_GRU(n_classes=10, summary=False):
 
 
 if __name__ == '__main__':
+    from keras.models import load_model
     model = get_Lipnet(n_classes=51, summary=False)
-
     data_gen = DataGenerator(batch_size=10, val_split=0.99)
-    model.fit_generator(generator=data_gen, epochs=1, shuffle=True, validation_data=data_gen.get_valid_data())
-    model.save("model")
-    print(model.evaluate(data_gen.get_valid_data(), batch_size=10, steps=1))
+    #model.fit_generator(generator=data_gen, epochs=1, shuffle=True, validation_data=data_gen.get_valid_data())
+    #model.save_weights('model_weights.h5')
+    model.load_weights('model_weights.h5')
+    x, y = data_gen.get_valid_data()
+    for index, x_ in enumerate(x):
+        pred = (model.predict(np.reshape(x_, (1, 75, 50, 100, 3))))
+        for i, p in enumerate(pred):
+            if p[i] > 0.04:
+                print("pred: {:4f},  true: {:2f}, diff: {:3f}".format(float(p[i]), y[index][i], float(y[index][i] - p[i])))
+
 
