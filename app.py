@@ -30,7 +30,9 @@ ACTIVATION_RATIO = 3.0
 RECORDING_TIME = 2.0
 ACTIVATION_TIME = 0.5
 
+frames = []
 current_frame = 0
+first_frame = True
 activated = False
 recording = False
 color = (0,0,255) #red
@@ -59,6 +61,26 @@ while(True):
         diff_w = euclidian_distance(left, right)
 
         ratio = round(diff_w/diff_h, 5)
+        
+        cv2.line(frame, left, right, color)
+        cv2.line(frame, top, bottom, color)
+
+        cv2.putText(frame, "ratio: %s" % ratio, (0, height-5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color)
+
+        for (x, y) in shape[mouth_lower:mouth_upper]:
+            cv2.circle(frame, (x, y), 1, color, -1)
+        
+        if first_frame:
+            (x, y, w, h) = cv2.boundingRect(np.array([shape[mouth_lower:mouth_upper]]))
+            first_frame = False
+        else:
+            (x, y, abcd, efgh) = cv2.boundingRect(np.array([shape[mouth_lower:mouth_upper]]))
+
+
+        mouth = frame[y-10 : y+h+10, x-5 : x+w+5]
+        mouth = cv2.resize(mouth, (100, 50), interpolation=cv2.INTER_LINEAR)
+
+        
 
         if ratio >= ACTIVATION_RATIO and not recording:  # mouth shut & not recording
             #print("mouth shut\r", end='') 
@@ -69,12 +91,19 @@ while(True):
             now_rec = time.perf_counter()
             color = (0,255,0) #green
 
-            current_frame += 1
             #print("\n")
             print("current_frame %d\r" % current_frame, end='')
 
             if current_frame == 75:
+                #print(np.array(frames))
+                print(np.array(frames).shape)
+
+                #spiel.do_move(danielsnetz.predict(np.array(frames).reshape(1, 75, 50, 100, 3)))
                 recording = False
+            else:
+                frames.append(mouth)
+            current_frame += 1
+
 
         elif activated:
             #print("checking  \r", end='')   
@@ -88,20 +117,10 @@ while(True):
             #print("mouth open\r", end='')
             when_opened = time.perf_counter()
             activated = True
-        
-        cv2.line(frame, left, right, color)
-        cv2.line(frame, top, bottom, color)
-
-        cv2.putText(frame, "ratio: %s" % ratio, (0, height-5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color)
-
-        for (x, y) in shape[mouth_lower:mouth_upper]:
-            cv2.circle(frame, (x, y), 1, color, -1)
-        (x, y, w, h) = cv2.boundingRect(np.array([shape[mouth_lower:mouth_upper]]))
-        mouth = frame[y-25 : y+h+25, x-25 : x+w+25]
     
 
     # Display the resulting frame
-    cv2.imshow('frame',frame)
+    #cv2.imshow('frame',frame)
     cv2.imshow('mouth',mouth)
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
