@@ -15,10 +15,17 @@ if gpus:
     except RuntimeError as e:
         print(e)
 
+'''Labels:
+ ['blue', 'green','red', 'white',
+   'zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine',
+   'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q','r'
+], 32
+'''
+
 
 # https://github.com/rizkiarm/LipNet/blob/master/lipnet/model2.py
 
-def get_Lipnet(n_classes=10, summary=False):
+def get_Lipnet(n_classes=32, summary=False):
     input_layer = Input(name='the_input', shape=(75, 50, 100, 3), dtype='float32')
     x = Conv3D(32, (3, 5, 5), strides=(1, 2, 2), padding="same", kernel_initializer='he_normal', name='conv1')(
         input_layer)
@@ -94,16 +101,15 @@ def get_Lipnet_no_GRU(n_classes=10, summary=False):
 
 if __name__ == '__main__':
     from keras.models import load_model
-    model = get_Lipnet(n_classes=51, summary=False)
+    model = get_Lipnet(n_classes=32, summary=False)
     data_gen = DataGenerator(batch_size=10, val_split=0.99)
     #model.fit_generator(generator=data_gen, epochs=1, shuffle=True, validation_data=data_gen.get_valid_data())
     #model.save_weights('model_weights.h5')
     model.load_weights('model_weights.h5')
     x, y = data_gen.get_valid_data()
     for index, x_ in enumerate(x):
-        pred = (model.predict(np.reshape(x_, (1, 75, 50, 100, 3))))
+        pred = model.predict(np.reshape(x_, (1, 75, 50, 100, 3)))
         for i, p in enumerate(pred):
-            if p[i] > 0.04:
-                print("pred: {:4f},  true: {:2f}, diff: {:3f}".format(float(p[i]), y[index][i], float(y[index][i] - p[i])))
+            print("pred: {:4f},  true: {:2f}, diff: {:3f}".format(float(p[i]), y[index][i], float(y[index][i] - p[i])))
 
 

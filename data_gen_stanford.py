@@ -12,15 +12,16 @@ lipnet_features = ['again', 'at', 'bin', 'blue', 'by', 'green', 'in', 'lay', 'pl
                    'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'q',
                    'r', 's', 't', 'p', 'u', 'v', 'x', 'y', 'z']
 
-lipnet_features_smol = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine']
+cols = ['videopath', 'blue', 'green', 'red', 'white', 'zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven',
+        'eight', 'nine', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r']
 
 
 class DataGenerator(Sequence):
 
-    def __init__(self, batch_size=10, dim=(75, 50, 100), n_channels=3, n_classes=51, val_split=0.99, shuffle=True):
+    def __init__(self, batch_size=10, dim=(75, 50, 100), n_channels=3, n_classes=32, val_split=0.99, shuffle=True):
         self.dim = dim
         self.batch_size = batch_size
-        self.df = self.get_dataframe(lipnet_features)
+        self.df = self.get_dataframe(cols)
         test_train_IDs = list(range(len(self.df.videopath)))
         # remove this shuffle if the validation data is supposed to stay the same over multiple runs
         random.shuffle(test_train_IDs)
@@ -60,18 +61,21 @@ class DataGenerator(Sequence):
         # Generate data
         for i, ID in enumerate(list_ids_temp):
             # Store sample
-            y[i] = np.array(self.df.iloc[ID, 2:].values)
-            X[i] = np.array(self.load_video(self.df.iloc[ID, 1]))
+            y[i] = np.array(self.df.iloc[ID, 1:].values)
+            X[i] = np.array(self.load_video(self.df.iloc[ID, 0]))
         return X, y
 
-    def get_dataframe(self, poss_labels, alignpath='./dataset/alignments/', videopath='./dataset/cropped_videos/'):
+    def get_dataframe(self, cols, alignpath='./dataset/alignments/', videopath='./dataset/cropped_videos/'):
         if 'train.csv' in os.listdir('./dataset/'):
-            return pd.read_csv('./dataset/train.csv', sep='\t')
+            df = pd.read_csv('./dataset/train.csv', sep='\t')
+            return df[cols]
+
+
 
         # ONLY DURING FIRST PREPARATION OF THE DATA SET
         # OBSOLETE IF train.csv WAS ALREADY PERPARED
         r = {'videopath': []}
-        for po in poss_labels:
+        for po in cols:
             r[po] = []
         video_paths = sorted(os.listdir(videopath))
         broken_index = 0
@@ -86,7 +90,7 @@ class DataGenerator(Sequence):
                     label = set(label)
                     label.remove('sil')
                     r['videopath'].append(videopath + video_paths[index])
-                    for item in poss_labels:
+                    for item in cols:
                         if item in label:
                             r[item].append(1)
                         else:
@@ -117,6 +121,6 @@ class DataGenerator(Sequence):
         X = np.empty((len(self.valid_IDs), *self.dim, self.n_channels))
         y = np.empty((len(self.valid_IDs), self.n_classes), dtype=int)
         for index, ID in enumerate(self.valid_IDs):
-            y[index] = np.array(self.df.iloc[ID, 2:].values)
-            X[index,] = np.array(self.load_video(self.df.iloc[ID, 1]))
+            y[index] = np.array(self.df.iloc[ID, 1:].values)
+            X[index,] = np.array(self.load_video(self.df.iloc[ID, 0]))
         return X, y
