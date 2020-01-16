@@ -6,10 +6,20 @@ import numpy as np
 import math
 from imutils import face_utils
 
+from lipnet_NN import HCI_LipNet as daniels_netz
+
 def euclidian_distance(p1, p2):
     diff_x = abs(p2[0]-p1[0])
     diff_y = abs(p2[1]-p1[1])
     return math.sqrt(diff_x*diff_x + diff_y*diff_y)
+
+model = daniels_netz()
+
+
+transl=['blue', 'green', 'red', 'white',
+        'zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine',
+        'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r']
+
 
 detector = dlib.get_frontal_face_detector()
 sp = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")
@@ -96,10 +106,16 @@ while(True):
 
             if current_frame == 75:
                 #print(np.array(frames))
-                print(np.array(frames).shape)
+                # print(np.array(frames).shape)
+                prediction = model.predict(np.array(frames))
+                color = transl[np.argmax(prediction[0:3])]
+                number = transl[np.argmax(prediction[4:13])]
+                letter = transl[np.argmax(prediction[14:])]
 
-                #spiel.do_move(danielsnetz.predict(np.array(frames).reshape(1, 75, 50, 100, 3)))
+                print(color, number, letter)
+                #spiel.do_move(danielsnetz.predict(np.array(frames)))
                 recording = False
+                frames = []
             else:
                 frames.append(mouth)
             current_frame += 1
