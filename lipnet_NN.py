@@ -34,9 +34,12 @@ class HCI_LipNet:
             self.model.save_weights(self.name + "_weights.h5")
 
         if test_network:
+            self.data_generator = DataGenerator(batch_size=10, val_split=0.99)
             x, y = self.data_generator.get_valid_data()
             for index, x_ in enumerate(x):
                 predictions = self.model.predict(np.reshape(x_, (1, 75, 50, 100, 3)))
+                print(predictions)
+                print(y[index])
                 for i, p in enumerate(predictions):
                     difference = np.abs(y[index][i] - p[i])
                     if difference < 0.4:
@@ -47,7 +50,10 @@ class HCI_LipNet:
     def predict(self, video):
         video = np.reshape(video, (1, 75, 50, 100, 3))
         prediction = self.model.predict(video)
-        return prediction
+        color = np.argmax(prediction[0][0:4])
+        number = 4 + np.argmax(prediction[0][4:14])
+        letter = 14 + np.argmax(prediction[0][14:])
+        return (self.labels[color], self.labels[number], self.labels[letter])
 
     def configure_network(self, n_classes=32, summary=False, big=True):
         multiplier = 1
@@ -84,9 +90,9 @@ class HCI_LipNet:
         outputs = Dense(n_classes, kernel_initializer='he_normal', name='dense1', activation="sigmoid")(x)
 
         model = Model(inputs=input_layer, outputs=outputs)
-        if summary:
+        if True:
             keras.utils.plot_model(model, 'HCI_LipNet.png', show_shapes=True)
-            print(self.model.summary())
+            print(model.summary())
 
         model.compile(loss=keras.losses.binary_crossentropy,
                       optimizer=keras.optimizers.Adam(beta_1=0.9, beta_2=0.999, lr=1e-4),
@@ -105,5 +111,5 @@ class HCI_LipNet:
                 print(e)
 
 
-if __name__ == "__main__":
-    HCI_LipNet(use_trained=False, test_network=True, use_big_network=False)
+#if __name__ == "__main__":
+#    HCI_LipNet(use_trained=True, test_network=True, use_big_network=True)

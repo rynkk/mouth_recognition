@@ -107,12 +107,8 @@ while(True):
             if current_frame == 75:
                 #print(np.array(frames))
                 # print(np.array(frames).shape)
-                prediction = model.predict(np.array(frames))
-                color = transl[np.argmax(prediction[0:3])]
-                number = transl[np.argmax(prediction[4:13])]
-                letter = transl[np.argmax(prediction[14:])]
+                print(model.predict(np.array(frames)))
 
-                print(color, number, letter)
                 #spiel.do_move(danielsnetz.predict(np.array(frames)))
                 recording = False
                 frames = []
