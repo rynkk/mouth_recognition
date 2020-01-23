@@ -1,61 +1,116 @@
-from keras.layers import Input, ZeroPadding3D, Conv3D, BatchNormalization, Activation, SpatialDropout3D, MaxPooling3D, \
-    TimeDistributed, Flatten, Bidirectional, GRU, Dense, AveragePooling3D
-from keras import Model
-import keras
 import numpy as np
+import keras
+import tensorflow as tf
+from keras.layers import Input, Conv3D, BatchNormalization, Activation, SpatialDropout3D, MaxPooling3D, \
+    TimeDistributed, Flatten, Bidirectional, GRU, Dense
+from keras import Model
 from data_gen_stanford import DataGenerator
+
+tf.get_logger().setLevel('ERROR')
 
 
 # https://github.com/rizkiarm/LipNet/blob/master/lipnet/model2.py
 
-def get_Lipnet(n_classes=10, summary=False):
-    input_layer = Input(name='the_input', shape=(75, 50, 100, 3), dtype='float32')
-    network = Conv3D(32, (3, 5, 5), strides=(1, 2, 2), padding="same", kernel_initializer='he_normal', name='conv1')(input_layer)
-    network = BatchNormalization(name='batc1')(network)
-    network = Activation('relu', name='actv1')(network)
-    network = SpatialDropout3D(0.5)(network)
-    network = MaxPooling3D(pool_size=(1, 2, 2), strides=(1, 2, 2), name='max1')(network)
+class HCI_LipNet:
 
-    network = Conv3D(64, (3, 5, 5), strides=(1, 1, 1), padding="same", kernel_initializer='he_normal', name='conv2')(network)
-    network = BatchNormalization(name='batc2')(network)
-    network = Activation('relu', name='actv2')(network)
-    network = SpatialDropout3D(0.5)(network)
-    network = MaxPooling3D(pool_size=(1, 2, 2), strides=(1, 2, 2), name='max2')(network)
+    def __init__(self, use_trained=True, test_network=False,
+                 use_big_network=True):  # todo: Maybe split into multiple networks?
+        self.labels = ['blue', 'green', 'red', 'white',
+                       'zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine',
+                       'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r']
+        if use_big_network:
+            self.name = "HCI_big"
+        else:
+            self.name = "HCI_small"
+        self.setup_GPUs()
+        self.model = self.configure_network(n_classes=32, summary=False, big=use_big_network)
+        if use_trained:
+            self.model.load_weights(self.name + "_weights.h5")
 
-    network = Conv3D(96, (3, 3, 3), strides=(1, 1, 1), padding="same", kernel_initializer='he_normal', name='conv3')(network)
-    network = BatchNormalization(name='batc3')(network)
-    network = Activation('relu', name='actv3')(network)
-    network = SpatialDropout3D(0.5)(network)
-    network = MaxPooling3D(pool_size=(1, 2, 2), strides=(1, 2, 2), name='max3')(network)
+        else:
+            self.data_generator = DataGenerator(batch_size=10, val_split=0.99)
+            self.model.fit_generator(generator=self.data_generator, epochs=1, shuffle=True,
+                                     validation_data=self.data_generator.get_valid_data())
+            self.model.save_weights(self.name + "_weights.h5")
 
-    #network = TimeDistributed(Flatten())(network)
+        if test_network:
+            self.data_generator = DataGenerator(batch_size=10, val_split=0.99)
+            x, y = self.data_generator.get_valid_data()
+            for index, x_ in enumerate(x):
+                predictions = self.model.predict(np.reshape(x_, (1, 75, 50, 100, 3)))
+                print(predictions)
+                print(y[index])
+                for i, p in enumerate(predictions):
+                    difference = np.abs(y[index][i] - p[i])
+                    if difference < 0.4:
+                        print("pred: {:4f},  true: {:2f}, correct".format(float(p[i]), y[index][i]))
+                    else:
+                        print("pred: {:4f},  true: {:2f}, ERROR".format(float(p[i]), y[index][i]))
 
-    #network = Bidirectional(GRU(128, return_sequences=True, kernel_initializer='Orthogonal', name='gru1'),
-    #                        merge_mode='concat')(network)
-    #network = Bidirectional(GRU(128, return_sequences=True, kernel_initializer='Orthogonal', name='gru2'),
-    #                        merge_mode='concat')(network)
-    network = Conv3D(64, (1, 1, 1))(network)
-    network = AveragePooling3D(pool_size=(2, 2, 2))(network)
-    network = Flatten()(network)
-    outputs = Dense(n_classes, kernel_initializer='he_normal', name='dense1', activation="sigmoid")(network)
+    def predict(self, video):
+        video = np.reshape(video, (1, 75, 50, 100, 3))
+        prediction = self.model.predict(video)
+        color = np.argmax(prediction[0][0:4])
+        number = 4 + np.argmax(prediction[0][4:14])
+        lettera_h = 14 + np.argmax(prediction[0][14:22])
+        letteri_r = 22 + np.argmax(prediction[0][22:])
+        return (self.labels[color], self.labels[number], self.labels[lettera_h], self.labels[letteri_r])
 
-    model = Model(inputs=input_layer, outputs=outputs)
-    if summary:
-        keras.utils.plot_model(model, 'network.png', show_shapes=True)
-        print(model.summary())
+    def configure_network(self, n_classes=32, summary=False, big=True):
+        multiplier = 1
+        if big:
+            multiplier = 2
+        input_layer = Input(name='the_input', shape=(75, 50, 100, 3), dtype='float32')
+        x = Conv3D(32 * multiplier, (3, 5, 5), strides=(1, 2, 2), padding="same", kernel_initializer='he_normal',
+                   name='conv1')(input_layer)
+        x = BatchNormalization(name='batc1')(x)
+        x = Activation('relu', name='actv1')(x)
+        x = SpatialDropout3D(0.5)(x)
+        x = MaxPooling3D(pool_size=(1, 2, 2), strides=(1, 2, 2), name='max1')(x)
 
-    model.compile(optimizer=keras.optimizers.adam(lr=1e-4),
-                  loss=keras.losses.binary_crossentropy,
-                  metrics=['accuracy'])
-    return model
+        x = Conv3D(64 * multiplier, (3, 5, 5), strides=(1, 1, 1), padding="same", kernel_initializer='he_normal',
+                   name='conv2')(x)
+        x = BatchNormalization(name='batc2')(x)
+        x = Activation('relu', name='actv2')(x)
+        x = SpatialDropout3D(0.5)(x)
+        x = MaxPooling3D(pool_size=(1, 2, 2), strides=(1, 2, 2), name='max2')(x)
+
+        x = Conv3D(96, (3, 3, 3), strides=(1, 1, 1), padding="same", kernel_initializer='he_normal', name='conv3')(x)
+        x = BatchNormalization(name='batc3')(x)
+        x = Activation('relu', name='actv3')(x)
+        x = SpatialDropout3D(0.5)(x)
+        x = MaxPooling3D(pool_size=(1, 2, 2), strides=(1, 2, 2), name='max3')(x)
+
+        x = TimeDistributed(Flatten())(x)
+
+        x = Bidirectional(GRU(128 * multiplier, return_sequences=True, kernel_initializer='Orthogonal', name='gru1'),
+                          merge_mode='concat')(x)
+        x = Bidirectional(GRU(128, return_sequences=True, kernel_initializer='Orthogonal', name='gru2'),
+                          merge_mode='concat')(x)
+        x = Flatten()(x)
+        outputs = Dense(n_classes, kernel_initializer='he_normal', name='dense1', activation="sigmoid")(x)
+
+        model = Model(inputs=input_layer, outputs=outputs)
+        if True:
+            keras.utils.plot_model(model, 'HCI_LipNet.png', show_shapes=True)
+            print(model.summary())
+
+        model.compile(loss=keras.losses.binary_crossentropy,
+                      optimizer=keras.optimizers.Adam(beta_1=0.9, beta_2=0.999, lr=1e-4),
+                      metrics=['acc', 'mse', keras.metrics.AUC()])
+        return model
+
+    @staticmethod
+    def setup_GPUs():
+        gpus = tf.config.experimental.list_physical_devices('GPU')
+        print(gpus)
+        if gpus:
+            try:
+                for gpu in gpus:
+                    tf.config.experimental.set_memory_growth(gpu, True)
+            except RuntimeError as e:
+                print(e)
 
 
-if __name__ == '__main__':
-    model = get_Lipnet(n_classes=51, summary=True)
-    datagen = DataGenerator(batch_size=10, val_split=0.99)
-    if False:
-        model.fit_generator(generator=datagen, epochs=1, shuffle=True, 
-            use_multiprocessing=True, workers=6)
-    else:
-        model.fit_generator(generator=datagen, epochs=1, shuffle=True, validation_data=datagen.get_valid_data())
-        
+#if __name__ == "__main__":
+#    HCI_LipNet(use_trained=True, test_network=True, use_big_network=True)
