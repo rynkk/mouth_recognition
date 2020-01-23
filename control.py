@@ -54,7 +54,7 @@ class ControlUnit:
 
         # set values in gameBoard and draw image
         if self.gameBoard is not None:
-            self.gameBoard.drawFigure(row, column, item)
+            self.gameBoard.drawFigure(row, column, 6)
 
 
     def mainloop(self):
