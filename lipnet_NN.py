@@ -52,8 +52,9 @@ class HCI_LipNet:
         prediction = self.model.predict(video)
         color = np.argmax(prediction[0][0:4])
         number = 4 + np.argmax(prediction[0][4:14])
-        letter = 14 + np.argmax(prediction[0][14:])
-        return (self.labels[color], self.labels[number], self.labels[letter])
+        lettera_h = 14 + np.argmax(prediction[0][14:22])
+        letteri_r = 22 + np.argmax(prediction[0][22:])
+        return (self.labels[color], self.labels[number], self.labels[lettera_h], self.labels[letteri_r])
 
     def configure_network(self, n_classes=32, summary=False, big=True):
         multiplier = 1

@@ -107,7 +107,9 @@ while(True):
             if current_frame == 75:
                 #print(np.array(frames))
                 # print(np.array(frames).shape)
+                color, number, lettera_h, letteri_r = model.predict(frames)
                 print(model.predict(np.array(frames)))
+
 
                 #spiel.do_move(danielsnetz.predict(np.array(frames)))
                 recording = False
