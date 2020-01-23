@@ -1,5 +1,6 @@
 import cv2
 import dlib
+import control
 import os
 import time
 import numpy as np
@@ -14,7 +15,7 @@ def euclidian_distance(p1, p2):
     return math.sqrt(diff_x*diff_x + diff_y*diff_y)
 
 model = daniels_netz()
-
+ui_control = control.ControlUnit()
 
 transl=['blue', 'green', 'red', 'white',
         'zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine',
@@ -111,7 +112,7 @@ while(True):
                 print(model.predict(np.array(frames)))
 
 
-                #spiel.do_move(danielsnetz.predict(np.array(frames)))
+                ui_control.controlfunction(danielsnetz.predict(np.array(frames)))
                 recording = False
                 frames = []
             else:
@@ -139,6 +140,7 @@ while(True):
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 
+ui_control.mainloop()
 # When everything done, release the capture
 cap.release()
 cv2.destroyAllWindows()
