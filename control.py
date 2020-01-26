@@ -1,6 +1,6 @@
 from tkinter import *
 from UI import GameBoard
-import lipnet_NN
+
 
 class ControlUnit:
 
@@ -11,8 +11,10 @@ class ControlUnit:
 
     def convert_ascii_to_column(self, sub_command):
         """converts ASCII in to the Value of the assigned column like A to 0"""
-
-        return ord(sub_command.upper()) - 65
+        if type(sub_command) == str and len(sub_command) == 1 :
+            return ord(sub_command.upper()) - 64
+        elif type(sub_command) == int:
+            return sub_command
 
     def convert_in_number(self, com):
         """converts strings of numbers 0 to 8 like 'one' into the intvalue 1 """
@@ -54,17 +56,25 @@ class ControlUnit:
 
         # set values in gameBoard and draw image
         if self.gameBoard is not None:
-            self.gameBoard.drawFigure(row, column, 6)
+            self.gameBoard.drawFigure(column, row, 6)
+            self.update()
 
-
+    def update(self):
+        self.root.update()
     def mainloop(self):
         self.root.mainloop()
 
+    def test(self):
+        self.controlfunction(("red","two","e","k",))
 
+    def test_with_row(self,row):
+        self.controlfunction(("red", row, "d", "k",))
 
 if __name__ == "__main__":
     newControlUnit = ControlUnit()
-    # Methods for "testing"
     # use newControlUnit.controlfunction(net_output) for changes
+
+    #tests
+    newControlUnit.test()
 
     newControlUnit.mainloop()
