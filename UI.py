@@ -1,18 +1,30 @@
 from tkinter import *
+
+import PIL
 from PIL import Image, ImageTk
 
-
+import cv2
+import dlib
+import math
+from imutils import face_utils
+import numpy as np
+import datetime
 import random
+import tkinter
 
+def euclidian_distance(p1, p2):
+    diff_x = abs(p2[0]-p1[0])
+    diff_y = abs(p2[1]-p1[1])
+    return math.sqrt(diff_x*diff_x + diff_y*diff_y)
 
 class GameBoard(Frame):
 
     gameboxs = ""
 
-    def __init__(self, parent, rows=10, columns=10, size=49, color1="lightgray", color2="lightgray"):
+    def __init__(self, parent, rows=7, columns=7, size=49, color1="lightgray", color2="lightgray"):
 
         '''size is the size of a square, in pixels'''
-
+        self.parent = parent
         self.rows = rows
         self.columns = columns
         self.size = size
@@ -20,6 +32,11 @@ class GameBoard(Frame):
         self.color2 = color2
         canvas_width = columns * size
         canvas_height = rows * size
+
+        self.delay = 40 ## delay of fps
+        #self.vid = MyVideoCapture('vtest.avi')
+        self.vid = MyVideoCapture(0)
+
 
         self.gameboxs = [[GameBox(i, j, 50, "white") for j in range(columns)] for i in range(rows)]
 
@@ -49,6 +66,15 @@ class GameBoard(Frame):
         Frame.__init__(self, parent)
 
         ##################################################################################################
+        ## Add right side with cam
+        self.rightCam = Canvas(self, borderwidth=0, highlightthickness=0,
+                             width=self.vid.width+50, height=self.vid.height+50)
+        self.rightCam.pack(side="right", fill="both", expand=True, padx=0, pady=0)
+
+        self.rightCam.create_rectangle(0, 0, self.vid.width, self.vid.height, outline="black", fill="white",
+                                     tags="square")
+
+        ##################################################################################################
         ## Add top and left border
 
         self.borderTop = Canvas(self, borderwidth=0, highlightthickness=0,
@@ -58,7 +84,7 @@ class GameBoard(Frame):
         self.borderTop.create_rectangle(30+size, 0, canvas_width+20, 30, outline="black", fill="white",
                                      tags="square")
 
-        borderTopChars = ["A", "B", "C", "D", "E", "F", "G", "H", "I"]
+        borderTopChars = ["A", "B", "C", "D", "E", "F"]
         i = 0
         for s in borderTopChars:
             self.borderTop.create_text(2*size+i*size,15, font="Times 20 italic bold", text=s)
@@ -72,7 +98,7 @@ class GameBoard(Frame):
                                      tags="square")
 
 
-        borderLeftChars = ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
+        borderLeftChars = ["1", "2", "3", "4", "5", "6"]
         i = 0
         for s in borderLeftChars:
             self.borderLeft.create_text(15,18+size+i*size, font="Times 20 italic bold", text=s)
@@ -87,13 +113,15 @@ class GameBoard(Frame):
         self.canvas.pack(side="top", fill="both", expand=True, padx=0, pady=0)
 
 
-
         # this binding will cause a refresh if the user interactively
         # changes the window size
 
         self.canvas.bind("<Configure>", self.refresh)
         self.button = Button(self, text="Click!", command=self.newColor)
         self.button.pack(side=LEFT)
+
+        self.update()
+
 
 
     def newColor(self):
@@ -152,7 +180,18 @@ class GameBoard(Frame):
                     self.canvas.create_image((g.x1+g.size//2,g.y1+g.size//2), image=g.image)
                     self.canvas.pack()
 
+    def update(self):
+        ## TODO: uncomment print
+        print("UPDATE: " + str(datetime.datetime.now()))
+        ret, frame = self.vid.get_frame()
 
+        if ret:
+            self.photo = PIL.ImageTk.PhotoImage(image=PIL.Image.fromarray(frame))
+            self.rightCam.create_image(0, 0, image=self.photo, anchor=tkinter.NW)
+
+        ## TODO: Add code for mouth recognition here!
+
+        self.parent.after(self.delay, self.update)
 
 
 class GameBox:
@@ -209,6 +248,35 @@ class GameBox:
         else:
             self.y1 = (self.row * self.size)
             self.y2 = self.y1 + self.size
+
+
+class MyVideoCapture:
+    def __init__(self, video_source=0):
+        # Open the video source
+        self.vid = cv2.VideoCapture(video_source)
+        if not self.vid.isOpened():
+            raise ValueError("Unable to open video source", video_source)
+
+        # Get video source width and height
+        # TODO: If needed manipulate here the size of vid window
+        self.width = self.vid.get(cv2.CAP_PROP_FRAME_WIDTH)
+        self.height = self.vid.get(cv2.CAP_PROP_FRAME_HEIGHT)
+
+    def get_frame(self):
+        ret, frame = self.vid.read()
+        if self.vid.isOpened():
+            if ret:
+                # Return a boolean success flag and the current frame converted to BGR
+                return (ret, cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+            else:
+                return (ret, None)
+        else:
+            return (ret, None)
+
+    # Release the video source when the object is destroyed
+    def __del__(self):
+        if self.vid.isOpened():
+            self.vid.release()
 
 
 if __name__ == "__main__":
