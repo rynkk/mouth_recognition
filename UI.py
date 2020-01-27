@@ -20,7 +20,7 @@ class GameBoard(Frame):
 
     gameboxs = ""
 
-    def __init__(self, parent, rows=7, columns=7, size=49, color1="lightgray", color2="lightgray"):
+    def __init__(self, parent, rows=7, columns=7, size=45, color1="lightgray", color2="lightgray"):
 
         '''size is the size of a square, in pixels'''
         self.parent = parent
@@ -76,18 +76,6 @@ class GameBoard(Frame):
         ##################################################################################################
         ## Add top and left border
 
-        self.borderTop = Canvas(self, borderwidth=0, highlightthickness=0,
-                             width=canvas_width, height=30)
-        self.borderTop.pack(side="top", fill="both", expand=True, padx=0, pady=0)
-
-        self.borderTop.create_rectangle(30+size, 0, canvas_width+20, 30, outline="black", fill="white",
-                                     tags="square")
-
-        borderTopChars = ["A", "B", "C", "D", "E", "F"]
-        i = 0
-        for s in borderTopChars:
-            self.borderTop.create_text(2*size+i*size,15, font="Times 20 italic bold", text=s)
-            i += 1
 
         self.borderLeft = Canvas(self, borderwidth=0, highlightthickness=0,
                              width=30, height=canvas_height)
@@ -95,7 +83,6 @@ class GameBoard(Frame):
 
         self.borderLeft.create_rectangle(0, size, 30, canvas_height-10, outline="black", fill="white",
                                      tags="square")
-
 
         borderLeftChars = ["1", "2", "3", "4", "5", "6"]
         i = 0
@@ -126,22 +113,22 @@ class GameBoard(Frame):
     def newColor(self):
         color = self.color2
 
-        for row in range(self.rows):
+        for row in range(self.rows - 1):
             if row == 0:
                 continue
             color = self.color1 if color == self.color2 else self.color2
 
-            for col in range(self.columns):
+            for col in range(self.columns - 1):
                 if col == 0:
                     continue
                 self.gameboxs[row][col].setColor(color)
                 color = self.color1 if color == self.color2 else self.color2
 
-        randRow = random.randrange(1, 10)
-        randColumn = random.randrange(1, 10)
+        randRow = random.randrange(1, 7)
+        randColumn = random.randrange(1, 7)
         g = self.gameboxs[randRow][randColumn]
-        g.setRed()
-        i = random.randrange(0,9)
+      #  g.setRed()
+        i = random.randrange(1,6)
         self.drawFigure(randRow, randColumn, i)
         self.refresh(None)
 
