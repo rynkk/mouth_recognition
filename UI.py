@@ -23,6 +23,7 @@ class GameBoard(Frame):
     def __init__(self, parent, rows=7, columns=7, size=45, color1="lightgray", color2="lightgray"):
 
         '''size is the size of a square, in pixels'''
+
         self.parent = parent
         self.rows = rows
         self.columns = columns
