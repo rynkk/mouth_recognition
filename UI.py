@@ -4,7 +4,6 @@ import PIL
 from PIL import Image, ImageTk
 
 import cv2
-import dlib
 import math
 from imutils import face_utils
 import numpy as np
@@ -34,8 +33,8 @@ class GameBoard(Frame):
         canvas_height = rows * size
 
         self.delay = 40 ## delay of fps
-        #self.vid = MyVideoCapture('vtest.avi')
-        self.vid = MyVideoCapture(0)
+        self.vid = MyVideoCapture('vtest.avi')
+        #self.vid = MyVideoCapture(0)
 
 
         self.gameboxs = [[GameBox(i, j, 50, "white") for j in range(columns)] for i in range(rows)]
