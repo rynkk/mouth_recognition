@@ -103,7 +103,7 @@ while(True):
             color = (0,255,0) #green
 
             #print("\n")
-            print("current_frame %d\r" % current_frame, end='')
+            print("current_frame %d\r" % current_frame)
 
             if current_frame == 75:
                 #print(np.array(frames))

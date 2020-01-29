@@ -34,7 +34,7 @@ class GameBoard(Frame):
         canvas_height = rows * size
 
         self.delay = 40 ## delay of fps
-        self.vid = MyVideoCapture('vtest.avi')
+        #self.vid = MyVideoCapture('vtest.avi')
         #self.vid = MyVideoCapture(0)
 
 
@@ -66,13 +66,13 @@ class GameBoard(Frame):
         Frame.__init__(self, parent)
 
         ##################################################################################################
-        ## Add right side with cam
+        """## Add right side with cam
         self.rightCam = Canvas(self, borderwidth=0, highlightthickness=0,
                              width=self.vid.width+50, height=self.vid.height+50)
         self.rightCam.pack(side="right", fill="both", expand=True, padx=0, pady=0)
 
         self.rightCam.create_rectangle(0, 0, self.vid.width, self.vid.height, outline="black", fill="white",
-                                     tags="square")
+                                     tags="square")"""
 
         ##################################################################################################
         ## Add top and left border
@@ -107,7 +107,7 @@ class GameBoard(Frame):
         self.button = Button(self, text="Click!", command=self.newColor)
         self.button.pack(side=LEFT)
 
-        self.update()
+        #self.update()
 
 
 
@@ -134,8 +134,10 @@ class GameBoard(Frame):
         self.refresh(None)
 
     def drawFigure(self, row, column, image_label):
+        print(type(row))
+        print(type(column))
         g = self.gameboxs[row][column]
-        image = PhotoImage(file="bmp/label_left_" + str(image_label) + ".png")
+        image = PhotoImage(file="bmp/"+str(image_label) + ".png")
         g.setFigureImage(image)
         self.refresh(None)
 
@@ -167,6 +169,9 @@ class GameBoard(Frame):
                     self.canvas.create_image((g.x1+g.size//2,g.y1+g.size//2), image=g.image)
                     self.canvas.pack()
 
+
+    '''
+
     def update(self):
         ## TODO: uncomment print
         print("UPDATE: " + str(datetime.datetime.now()))
@@ -178,7 +183,7 @@ class GameBoard(Frame):
 
         ## TODO: Add code for mouth recognition here!
 
-        self.parent.after(self.delay, self.update)
+        self.parent.after(self.delay, self.update)'''
 
 
 class GameBox:

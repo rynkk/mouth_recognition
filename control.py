@@ -11,14 +11,18 @@ class ControlUnit:
 
     def convert_ascii_to_column(self, sub_command):
         """converts ASCII in to the Value of the assigned column like A to 0"""
-        if type(sub_command) == str and len(sub_command) == 1 :
+        if type(sub_command) == str :
+
+            if ord(sub_command) >= ord('g'):
+                sub_command = 'f'
+
             return ord(sub_command.upper()) - 64
         elif type(sub_command) == int:
             return sub_command
 
     def convert_in_number(self, com):
         """converts strings of numbers 0 to 8 like 'one' into the intvalue 1 """
-
+        print("Com"+com)
         if com == "one":
             return 1
         elif com == "two":
@@ -32,13 +36,20 @@ class ControlUnit:
         elif com == "six":
             return 6
         elif com == "seven":
-            return 7
+            return 6
         elif com == "eight":
-            return 8
+            return 6
         elif com == "zero":
             return 0
-        else:
-            return com
+        elif com == "nine":
+            return 6
+
+
+
+    def hot_fix(self, value):
+        if ord(value) >= ord('l'):
+            value = 'l'
+        return chr(ord(value)-(ord("j")-ord("g"))+1)
 
     def controlfunction(self, commands_spoken):
         """ Method for updating the UI for net Output (commands_spoken)"""
@@ -48,7 +59,7 @@ class ControlUnit:
         # Parts of the Command
         row = self.convert_ascii_to_column(commands_spoken[2])
         column = self.convert_in_number(commands_spoken[1])
-        item = commands_spoken[3]
+        item = self.hot_fix(commands_spoken[3])
         color = commands_spoken[0]
 
         # Used the actual Command to fill the variables above with the corresponding values
@@ -56,16 +67,19 @@ class ControlUnit:
 
         # set values in gameBoard and draw image
         if self.gameBoard is not None:
-            self.gameBoard.drawFigure(column, row, 6)
+            self.gameBoard.drawFigure(row, column, item+"_"+color)
+            #self.gameBoard.drawFigure(column, row, item+"_"+color)
             self.update()
 
     def update(self):
         self.root.update()
+
     def mainloop(self):
         self.root.mainloop()
 
     def test(self):
         self.controlfunction(("red","two","e","k",))
+#        self.controlfunction(("red","two","e","k",))
 
     def test_with_row(self,row):
         self.controlfunction(("red", row, "d", "k",))
