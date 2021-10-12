@@ -3,4 +3,4 @@ keras
 dlib==19.18.0
 imutils==0.5.3
 numpy==1.17.3
-opencv-python==4.1.1.26	
+opencv-python==4.2.0.32	
